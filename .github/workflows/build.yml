@@ -18,17 +18,17 @@ jobs:
 
     steps:
 
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v6
       with:
         submodules: true
 
     - name: Check cache
       id: verify-cache
       run: |
-        echo "::set-output name=heads::`git ls-remote https://github.com/theos/theos | head -n 1 | cut -f 1`-`git ls-remote https://github.com/xybp888/iOS-SDKs | head -n 1 | cut -f 1`"
+        echo "heads=$(git ls-remote https://github.com/theos/theos | head -n 1 | cut -f 1)-$(git ls-remote https://github.com/xybp888/iOS-SDKs | head -n 1 | cut -f 1)" >> "$GITHUB_OUTPUT"
     - name: Use cache
       id: cache
-      uses: actions/cache@v3
+      uses: actions/cache@v5
       with:
         path: ${{ github.workspace }}/theos
         key: ${{ runner.os }}-${{ steps.verify-cache.outputs.heads }}
@@ -49,12 +49,18 @@ jobs:
       run: |
         sed -i '' 's/SEL action;/SEL action;\n\tSEL setter;\n\tSEL getter;/' $THEOS/vendor/include/Preferences/PSSpecifier.h
 
+    - name: Sync package version with tag
+      if: startsWith(github.ref, 'refs/tags/v')
+      run: |
+        VERSION="${GITHUB_REF_NAME#v}"
+        sed -i '' "s/^Version: .*/Version: ${VERSION}/" control
+
     - name: Build package
       run: |
         rm -f packages/*
         make package FINALPACKAGE=1
     - name: Release
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v3
       if: startsWith(github.ref, 'refs/tags/')
       with:
         files: ${{ github.workspace }}/packages/*.deb
