@@ -9,6 +9,9 @@ on:
     types:
       - created
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: macos-latest
