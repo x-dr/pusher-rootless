@@ -22,7 +22,7 @@ static void setPreference(CFStringRef keyRef, CFPropertyListRef val,
   [super viewDidLoad];
 
   // Create buttons
-  _updateBn = [[UIBarButtonItem alloc] initWithTitle:@"Update"
+  _updateBn = [[UIBarButtonItem alloc] initWithTitle:@"更新"
                                                style:UIBarButtonItemStylePlain
                                               target:self
                                               action:@selector(updateDevices)];
@@ -138,14 +138,12 @@ static void setPreference(CFStringRef keyRef, CFPropertyListRef val,
     if (_serviceDevices.count) {
       PSSpecifier *groupSpecifier = [PSSpecifier emptyGroupSpecifier];
       if (XEq(_service, PUSHER_SERVICE_PUSHOVER)) {
-        [groupSpecifier setProperty:@"Selecting none will forward push "
-                                    @"notifications to all devices."
+        [groupSpecifier setProperty:@"不选择设备时，推送通知会转发到所有设备。"
                              forKey:@"footerText"];
       } else if (XEq(_service, PUSHER_SERVICE_PUSHBULLET)) {
         [groupSpecifier
             setProperty:
-                @"Pushbullet only allows one receiving device. Selecting none "
-                @"will forward push notifications to all devices."
+                @"Pushbullet 只允许选择一个接收设备。不选择设备时，推送通知会转发到所有设备。"
                  forKey:@"footerText"];
       }
       [allSpecifiers addObject:groupSpecifier];
@@ -256,17 +254,17 @@ static void setPreference(CFStringRef keyRef, CFPropertyListRef val,
               NSString *title;
               NSString *msg = @"";
               if (errors == nil || errors.count == 0) {
-                title = @"Unknown Error";
-                msg = XStr(@"Server response: %@", json);
+                title = @"未知错误";
+                msg = XStr(@"服务器响应：%@", json);
               } else {
-                title = @"Server Error";
+                title = @"服务器错误";
                 msg = XStr(@"%@", [errors componentsJoinedByString:@"\n"]);
               }
               UIAlertController *alert = XAlertTitle(title, msg);
               id handler = ^(UIAlertAction *action) {
                 [self.navigationController popViewControllerAnimated:YES];
               };
-              [alert addAction:XAlertBtnHandler(@"Ok", handler)];
+              [alert addAction:XAlertBtnHandler(@"好", handler)];
               dispatch_async(dispatch_get_main_queue(), ^{
                 [self presentViewController:alert animated:YES completion:nil];
               });
@@ -311,15 +309,14 @@ static void setPreference(CFStringRef keyRef, CFPropertyListRef val,
             };
             NSString *msg;
             if (data.length == 0 && error == nil) {
-              msg = @"Server did not respond. Please check your internet "
-                    @"connection or try again later.";
+              msg = @"服务器没有响应。请检查网络连接或稍后重试。";
             } else if (error) {
               msg = error.localizedDescription;
             } else {
-              msg = @"Unknown Error. Contact Developer.";
+              msg = @"未知错误。请联系开发者。";
             }
-            UIAlertController *alert = XAlertTitle(@"Network Error", msg);
-            [alert addAction:XAlertBtnHandler(@"Ok", handler)];
+            UIAlertController *alert = XAlertTitle(@"网络错误", msg);
+            [alert addAction:XAlertBtnHandler(@"好", handler)];
             dispatch_async(dispatch_get_main_queue(), ^{
               [self presentViewController:alert animated:YES completion:nil];
             });
@@ -359,13 +356,13 @@ static void setPreference(CFStringRef keyRef, CFPropertyListRef val,
             NSDictionary *error = (NSDictionary *)json[@"error"];
             if (error) {
               XLog(@"Something went wrong");
-              NSString *title = @"Server Error";
-              NSString *msg = error[@"message"] ?: @"Unknown Error";
+              NSString *title = @"服务器错误";
+              NSString *msg = error[@"message"] ?: @"未知错误";
               UIAlertController *alert = XAlertTitle(title, msg);
               id handler = ^(UIAlertAction *action) {
                 [self.navigationController popViewControllerAnimated:YES];
               };
-              [alert addAction:XAlertBtnHandler(@"Ok", handler)];
+              [alert addAction:XAlertBtnHandler(@"好", handler)];
               dispatch_async(dispatch_get_main_queue(), ^{
                 [self presentViewController:alert animated:YES completion:nil];
               });
@@ -426,15 +423,14 @@ static void setPreference(CFStringRef keyRef, CFPropertyListRef val,
             };
             NSString *msg;
             if (data.length == 0 && error == nil) {
-              msg = @"Server did not respond. Please check your internet "
-                    @"connection or try again later.";
+              msg = @"服务器没有响应。请检查网络连接或稍后重试。";
             } else if (error) {
               msg = error.localizedDescription;
             } else {
-              msg = @"Unknown Error. Contact Developer.";
+              msg = @"未知错误。请联系开发者。";
             }
-            UIAlertController *alert = XAlertTitle(@"Network Error", msg);
-            [alert addAction:XAlertBtnHandler(@"Ok", handler)];
+            UIAlertController *alert = XAlertTitle(@"网络错误", msg);
+            [alert addAction:XAlertBtnHandler(@"好", handler)];
             dispatch_async(dispatch_get_main_queue(), ^{
               [self presentViewController:alert animated:YES completion:nil];
             });

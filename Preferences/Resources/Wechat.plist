@@ -9,7 +9,7 @@
 			<key>cell</key>
 			<string>PSGroupCell</string>
 			<key>label</key>
-			<string>Credentials</string>
+			<string>凭据</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -23,7 +23,7 @@
 			<key>key</key>
 			<string>WechatCorpid</string>
 			<key>label</key>
-			<string>Corpid:</string>
+			<string>企业 ID（Corpid）：</string>
 			<key>noAutoCorrect</key>
 			<true/>
 		</dict>
@@ -39,7 +39,7 @@
 			<key>key</key>
 			<string>WechatCorpsecret</string>
 			<key>label</key>
-			<string>Corpsecret:</string>
+			<string>应用密钥（Corpsecret）：</string>
 			<key>noAutoCorrect</key>
 			<true/>
 		</dict>
@@ -55,7 +55,7 @@
 			<key>key</key>
 			<string>WechatAgentID</string>
 			<key>label</key>
-			<string>AgentID:</string>
+			<string>应用 AgentID：</string>
 			<key>noAutoCorrect</key>
 			<true/>
 		</dict>
@@ -65,7 +65,7 @@
 			<key>cell</key>
 			<string>PSGroupCell</string>
 			<key>label</key>
-			<string>Apps</string>
+			<string>应用</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -82,8 +82,8 @@
 			<string>WechatAppListIsBlacklist</string>
 			<key>validTitles</key>
 			<array>
-				<string>Blacklist</string>
-				<string>Whitelist</string>
+				<string>黑名单</string>
+				<string>白名单</string>
 			</array>
 			<key>validValues</key>
 			<array>
@@ -99,7 +99,7 @@
 			<key>icon</key>
 			<string>app_list</string>
 			<key>label</key>
-			<string>App List</string>
+			<string>应用列表</string>
 			<key>ALSettingsKeyPrefix</key>
 			<string>WechatBL-</string>
 			<key>useSearchBar</key>
@@ -111,7 +111,7 @@
 			<key>cell</key>
 			<string>PSLinkCell</string>
 			<key>label</key>
-			<string>App Customization</string>
+			<string>应用自定义</string>
 			<key>icon</key>
 			<string>app_list</string>
 			<key>detail</key>
@@ -127,13 +127,13 @@
 			<key>cell</key>
 			<string>PSGroupCell</string>
 			<key>label</key>
-			<string>Options</string>
+			<string>选项</string>
 			<key>footerText</key>
-			<string>Use touser to specify message recipients.
-Separate usernames with "|", like "Tom|Jerry". Default is "@all" for all users. Leave blank for "@all".</string>
+			<string>使用 touser 指定消息接收人。
+多个用户名请用 “|” 分隔，例如 “Tom|Jerry”。默认值为 “@all”，表示所有用户。留空也会使用 “@all”。</string>
 		</dict>
 	</array>
 	<key>title</key>
-	<string>Wechat</string>
+	<string>企业微信</string>
 </dict>
 </plist>

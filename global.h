@@ -14,7 +14,7 @@
 #define PUSHER_TRIES 5 // how many times pusher will try to send the web request
 #define PUSHER_LOG_MAX_STRING_LENGTH 50
 #define PUSHER_LOG_IMAGE_DATA_PROPERTIES @[@"icon", @"image"] // properties to replace with PUSHER_LOG_IMAGE_DATA_REPLACEMENT in the log
-#define PUSHER_LOG_IMAGE_DATA_REPLACEMENT @"[Base64 Image String]"
+#define PUSHER_LOG_IMAGE_DATA_REPLACEMENT @"[Base64 图片字符串]"
 #define PUSHER_DEFAULT_MAX_WIDTH 1000.0
 #define PUSHER_DEFAULT_MAX_HEIGHT 1000.0
 #define PUSHER_DEFAULT_SHRINK_FACTOR 2.5
@@ -38,13 +38,13 @@
 #define PUSHER_WHEN_TO_PUSH_EITHER 1
 #define PUSHER_WHEN_TO_PUSH_UNLOCKED 2
 
-#define PUSHER_TEST_NOTIFICATION_TITLE @"Title"
-#define PUSHER_TEST_NOTIFICATION_SUBTITLE @"Subtitle"
-#define PUSHER_TEST_NOTIFICATION_MESSAGE @"Message"
-#define PUSHER_TEST_NOTIFICATION_APP_NAME @"Settings"
+#define PUSHER_TEST_NOTIFICATION_TITLE @"标题"
+#define PUSHER_TEST_NOTIFICATION_SUBTITLE @"副标题"
+#define PUSHER_TEST_NOTIFICATION_MESSAGE @"消息"
+#define PUSHER_TEST_NOTIFICATION_APP_NAME @"设置"
 #define PUSHER_TEST_NOTIFICATION_SECTION_ID @"com.apple.Preferences"
 
-#define PUSHER_TEST_PUSH_RESULT_PREFIX @"Test Notification Result: "
+#define PUSHER_TEST_PUSH_RESULT_PREFIX @"测试通知结果："
 
 typedef NS_OPTIONS(NSUInteger, BBActualSectionInfoPushSettings) {
 	BBActualSectionInfoPushSettingsBadges = 1 << 3, // was 0

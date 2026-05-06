@@ -17,6 +17,11 @@ static int countAppIDsWithPrefix(NSDictionary *prefs, NSString *prefix) {
   return count;
 }
 
+static BOOL specifierNameMatches(PSSpecifier *specifier, NSString *englishName,
+                                 NSString *chineseName) {
+  return XEq(specifier.name, englishName) || XEq(specifier.name, chineseName);
+}
+
 @implementation NSPGlobalSettingsListController
 
 - (NSArray *)specifiers {
@@ -45,9 +50,10 @@ static int countAppIDsWithPrefix(NSDictionary *prefs, NSString *prefix) {
 
     for (PSSpecifier *specifier in _specifiers) {
       if (specifier.cellType == PSLinkCell &&
-          XEq(specifier.name, @"Global App List")) {
+          specifierNameMatches(specifier, @"Global App List",
+                               @"全局应用列表")) {
         specifier.name =
-            XStr(@"%@ (%d total)", specifier.name,
+            XStr(@"%@（共 %d 个）", specifier.name,
                  countAppIDsWithPrefix(
                      prefs, [specifier propertyForKey:@"ALSettingsKeyPrefix"]));
         [specifier setProperty:self forKey:@"psListRef"];

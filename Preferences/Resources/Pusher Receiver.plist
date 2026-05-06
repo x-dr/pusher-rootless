@@ -9,15 +9,15 @@
 			<key>cell</key>
 			<string>PSGroupCell</string>
 			<key>label</key>
-			<string>Where to Download</string>
+			<string>下载位置</string>
 			<key>footerText</key>
-			<string>Pusher Receiver is a browser extension that displays pushes as desktop notifications.</string>
+			<string>Pusher Receiver 是一个浏览器扩展，可将推送显示为桌面通知。</string>
 		</dict>
 		<dict>
 			<key>cell</key>
 			<string>PSButtonCell</string>
 			<key>label</key>
-			<string>Open Firefox Extension</string>
+			<string>打开 Firefox 扩展</string>
 			<key>icon</key>
 			<string>firefox</string>
 			<key>action</key>
@@ -27,7 +27,7 @@
 			<key>cell</key>
 			<string>PSButtonCell</string>
 			<key>label</key>
-			<string>Open Chrome Extension</string>
+			<string>打开 Chrome 扩展</string>
 			<key>icon</key>
 			<string>chrome</string>
 			<key>action</key>
@@ -39,15 +39,15 @@
 			<key>cell</key>
 			<string>PSGroupCell</string>
 			<key>label</key>
-			<string>Support</string>
+			<string>支持</string>
 			<key>footerText</key>
-			<string>Huge thanks to @burkybang for the awesome browser extension as well as all of his help with ideas and testing!</string>
+			<string>非常感谢 @burkybang 制作优秀的浏览器扩展，并在想法和测试上提供大量帮助！</string>
 		</dict>
 		<dict>
 			<key>cell</key>
 			<string>PSButtonCell</string>
 			<key>label</key>
-			<string>Developer: @burkybang</string>
+			<string>开发者：@burkybang</string>
 			<key>icon</key>
 			<string>twitter</string>
 			<key>action</key>
@@ -59,7 +59,7 @@
 			<key>cell</key>
 			<string>PSGroupCell</string>
 			<key>label</key>
-			<string>Database</string>
+			<string>数据库</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -73,7 +73,7 @@
 			<key>key</key>
 			<string>Pusher ReceiverDBName</string>
 			<key>label</key>
-			<string>Database Name:</string>
+			<string>数据库名称：</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -87,7 +87,7 @@
 			<key>key</key>
 			<string>Pusher ReceiverKey</string>
 			<key>label</key>
-			<string>API Key:</string>
+			<string>API Key：</string>
 		</dict>
 
 		<!-- App List -->
@@ -95,7 +95,7 @@
 			<key>cell</key>
 			<string>PSGroupCell</string>
 			<key>label</key>
-			<string>Apps</string>
+			<string>应用</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -112,8 +112,8 @@
 			<string>Pusher ReceiverAppListIsBlacklist</string>
 			<key>validTitles</key>
 			<array>
-				<string>Blacklist</string>
-				<string>Whitelist</string>
+				<string>黑名单</string>
+				<string>白名单</string>
 			</array>
 			<key>validValues</key>
 			<array>
@@ -129,7 +129,7 @@
 			<key>icon</key>
 			<string>app_list</string>
 			<key>label</key>
-			<string>App List</string>
+			<string>应用列表</string>
 			<key>ALSettingsKeyPrefix</key>
 			<string>Pusher ReceiverBL-</string>
 			<key>useSearchBar</key>
@@ -141,7 +141,7 @@
 			<key>cell</key>
 			<string>PSLinkCell</string>
 			<key>label</key>
-			<string>App Customization</string>
+			<string>应用自定义</string>
 			<key>icon</key>
 			<string>app_list</string>
 			<key>detail</key>
@@ -165,21 +165,21 @@
 			<key>cell</key>
 			<string>PSGroupCell</string>
 			<key>label</key>
-			<string>Options</string>
+			<string>选项</string>
 			<key>footerText</key>
-			<string>The server may reject the request if the data is too large, which is usually a result of the image being high resolution. Pusher will try to forward the notification 5 times, shrinking the image each time by the factor you specify. If by the last retry the image is too large, it will remove the image but leave an indication that one is attached so the application may display a placeholder. The image will initially be resized to fit the maximum width and height unless it is already smaller. The image shrink factor must be greater than 1.0 to work since it is division (a factor of 2 means it will divide the image dimensions in half).</string>
+			<string>如果数据过大，服务器可能会拒绝请求，这通常是因为图片分辨率过高。Pusher 会尝试转发通知 5 次，并在每次重试时按你指定的系数缩小图片。最后一次重试时如果图片仍然过大，Pusher 会移除图片，但会保留一个“包含图片”的标记，方便接收端显示占位内容。图片会先缩放到不超过最大宽度和高度，除非它本来就更小。图片缩小系数必须大于 1.0 才会生效，因为这里使用除法（系数为 2 表示图片尺寸减半）。</string>
 		</dict>
 
-		<!-- Date Format -->
+		<!-- 日期格式 -->
 		<dict>
 			<key>cell</key>
 			<string>PSGroupCell</string>
 			<key>footerText</key>
-			<string>INSTRUCTIONS:
-1. Click 'Open Date Format Instructions' above (https://nsdateformatter.com).
-2. Using the reference and examples, create your desired date format and enter it above. If you don't care about the date, you may leave it as the default
+			<string>说明：
+1. 点击上方的“打开日期格式说明”（https://nsdateformatter.com）。
+2. 参考说明和示例，创建你想要的日期格式并填入上方。如果你不关心日期，可以保留默认值。
 
-Example formats for Saturday, April 13, 2019 @ 3:12 AM:
+以下示例对应 2019 年 4 月 13 日星期六凌晨 3:12：
 EEEE, MMM d, yyyy = Saturday, Apr 13, 2019
 MM/dd/yyyy = 04/13/2019
 MM-dd-yyyy HH:mm = 04-13-2019 03:12
@@ -194,7 +194,7 @@ HH:mm:ss.SSS = 03:12:11.678
 			<key>cell</key>
 			<string>PSButtonCell</string>
 			<key>label</key>
-			<string>Open Date Format Instructions</string>
+			<string>打开日期格式说明</string>
 			<key>action</key>
 			<string>openDateFormatInstructions</string>
 		</dict>
@@ -210,7 +210,7 @@ HH:mm:ss.SSS = 03:12:11.678
 			<key>key</key>
 			<string>Pusher ReceiverDateFormat</string>
 			<key>label</key>
-			<string>Date Format:</string>
+			<string>日期格式：</string>
 			<key>noAutoCorrect</key>
 			<true/>
 		</dict>

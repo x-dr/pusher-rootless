@@ -5,8 +5,10 @@
 
 
 #define SEGMENTED_CONTROL_TAG 673
-#define NETWORK_RESPONSE_ITEMS @[ @"Any", @"Success", @"No Data", @"Error" ]
-#define END_RESULT_ITEMS @[ @"Any", @"Blocked", @"Pushed" ]
+#define NETWORK_RESPONSE_VALUES @[ @"Any", @"Success", @"No Data", @"Error" ]
+#define NETWORK_RESPONSE_TITLES @[ @"全部", @"成功", @"无数据", @"错误" ]
+#define END_RESULT_VALUES @[ @"Any", @"Blocked", @"Pushed" ]
+#define END_RESULT_TITLES @[ @"全部", @"已阻止", @"已推送" ]
 
 #define EXPANDED_TEXT_VIEW_TAG 674
 
@@ -68,15 +70,15 @@ static NSDictionary *getLogPreferences() {
   tutorialView.alpha = 0.f;
   tutorialView.backgroundColor = [UIColor colorWithWhite:0.f alpha:0.9f];
 
-  // Label setup
+  // 教程遮罩：筛选日志后的交互提示。
   UILabel *label = [UILabel new];
   label.font = [UIFont fontWithName:@"HelveticaNeue-Thin"
                                size:UIFont.systemFontSize * 1.5f];
   label.textColor = UIColor.whiteColor;
-  label.text = @"After using the app filter, you can swipe to delete to unset "
-               @"it and show all apps again.\n\nTap on any truncated log to "
-               @"expand it.\n\n Tap and hold on a log to copy it to the "
-               @"clipboard.\n\nTap anywhere to continue.";
+  label.text = @"使用应用筛选后，可以左滑删除筛选条件，并重新显示所有应用。"
+               @"\n\n轻点被截断的日志可展开。"
+               @"\n\n长按日志可复制到剪贴板。"
+               @"\n\n轻点任意位置继续。";
   label.lineBreakMode = NSLineBreakByWordWrapping;
   label.numberOfLines = 0;
   label.translatesAutoresizingMaskIntoConstraints = NO;
@@ -175,7 +177,7 @@ static NSDictionary *getLogPreferences() {
   _filteredGlobalOnly = NO;
 
   self.navigationItem.title =
-      [self.specifier propertyForKey:@"label"] ?: @"Log";
+      [self.specifier propertyForKey:@"label"] ?: @"日志";
 
   CFPropertyListRef logEnabledRef = CFPreferencesCopyValue(
       (__bridge CFStringRef)_logEnabledKey, PUSHER_APP_ID,
@@ -214,21 +216,21 @@ static NSDictionary *getLogPreferences() {
   if (_sections) {
     [_sections release];
   }
-  _sections = [@[ @"Settings", @"Filters" ] mutableCopy];
+  _sections = [@[ @"设置", @"筛选" ] mutableCopy];
 
   if (_data) {
     [_data release];
   }
   _data = [@{
-    _sections[0] : [@[ @"Logger Enabled", @"Clear All Logs" ] mutableCopy],
+    _sections[0] : [@[ @"日志开关", @"清除全部日志" ] mutableCopy],
     _sections[1] : [@[
-      @"Network Response", @"End Result", @"Select an App", @"Global Only"
+      @"网络响应", @"最终结果", @"选择应用", @"仅全局"
     ] mutableCopy]
   } mutableCopy];
 
   if (_global) {
     // remove enabled switch because global can't be disabled
-    [_data[_sections[0]] removeObject:@"Logger Enabled"];
+    [_data[_sections[0]] removeObject:@"日志开关"];
     _logEnabledSwitchRow = -1;
     _clearLogRow = 0;
 
@@ -237,7 +239,7 @@ static NSDictionary *getLogPreferences() {
     _logEnabledSwitchRow = 0;
     _clearLogRow = 1;
     // remove global only switch because don't show on individual services
-    [_data[_sections[1]] removeObject:@"Global Only"];
+    [_data[_sections[1]] removeObject:@"仅全局"];
     _globalOnlyRow = -1;
   }
 
@@ -295,7 +297,7 @@ static NSDictionary *getLogPreferences() {
 
     NSString *sectionName = logSection[@"name"];
     if (!sectionName) {
-      NSString *appName = @"Unknown App";
+      NSString *appName = @"未知应用";
       if (logSectionAppID) {
         LSApplicationProxy* appProxy = [LSApplicationProxy applicationProxyForIdentifier:logSectionAppID];
         appName = [appProxy localizedName];
@@ -317,7 +319,7 @@ static NSDictionary *getLogPreferences() {
     NSString *logSectionService = logSection[@"service"];
     if (logSectionService) {
       if (XIsEmpty(logSectionService)) {
-        sectionName = XStr(@"{GLOBAL} %@", sectionName);
+        sectionName = XStr(@"{全局} %@", sectionName);
       } else {
         sectionName = XStr(@"[%@] %@", logSectionService, sectionName);
       }
@@ -339,8 +341,8 @@ static NSDictionary *getLogPreferences() {
       }
     }
     if (_filteredEndResult) {
-      BOOL shouldContainPushed = XEq(_filteredEndResult, END_RESULT_ITEMS[2]);
-      BOOL containsPushed = [logs containsObject:END_RESULT_ITEMS[2]];
+      BOOL shouldContainPushed = XEq(_filteredEndResult, END_RESULT_VALUES[2]);
+      BOOL containsPushed = [logs containsObject:END_RESULT_VALUES[2]];
       if (shouldContainPushed != containsPushed) {
         continue;
       }
@@ -525,10 +527,10 @@ static NSDictionary *getLogPreferences() {
       UISegmentedControl *segmentedControl = nil;
       if (isNetworkResponse) {
         segmentedControl =
-            [[UISegmentedControl alloc] initWithItems:NETWORK_RESPONSE_ITEMS];
+            [[UISegmentedControl alloc] initWithItems:NETWORK_RESPONSE_TITLES];
         segmentedControl.selectedSegmentIndex =
             _filteredNetworkResponse
-                ? [NETWORK_RESPONSE_ITEMS
+                ? [NETWORK_RESPONSE_VALUES
                       indexOfObject:_filteredNetworkResponse]
                 : 0;
         [segmentedControl addTarget:self
@@ -536,10 +538,10 @@ static NSDictionary *getLogPreferences() {
                    forControlEvents:UIControlEventValueChanged];
       } else {
         segmentedControl =
-            [[UISegmentedControl alloc] initWithItems:END_RESULT_ITEMS];
+            [[UISegmentedControl alloc] initWithItems:END_RESULT_TITLES];
         segmentedControl.selectedSegmentIndex =
             _filteredEndResult
-                ? [END_RESULT_ITEMS indexOfObject:_filteredEndResult]
+                ? [END_RESULT_VALUES indexOfObject:_filteredEndResult]
                 : 0;
         [segmentedControl addTarget:self
                              action:@selector(endResultFilterUpdated:)
@@ -577,7 +579,7 @@ static NSDictionary *getLogPreferences() {
       if (_filteredAppID) {
         LSApplicationProxy* appProxy = [LSApplicationProxy applicationProxyForIdentifier:_filteredAppID];
         cell.textLabel.text =
-            XStr(@"App Filter: %@", [appProxy localizedName]);
+            XStr(@"应用筛选：%@", [appProxy localizedName]);
         cell.imageView.image = [UIImage
             _applicationIconImageForBundleIdentifier:_filteredAppID
                                               format:0
@@ -709,7 +711,7 @@ static NSDictionary *getLogPreferences() {
   if (idx == 0) { // any
     _filteredNetworkResponse = nil;
   } else {
-    _filteredNetworkResponse = NETWORK_RESPONSE_ITEMS[idx];
+    _filteredNetworkResponse = NETWORK_RESPONSE_VALUES[idx];
   }
   [self updateLogAndReload];
 }
@@ -719,7 +721,7 @@ static NSDictionary *getLogPreferences() {
   if (idx == 0) { // any
     _filteredEndResult = nil;
   } else {
-    _filteredEndResult = END_RESULT_ITEMS[idx];
+    _filteredEndResult = END_RESULT_VALUES[idx];
   }
   [self updateLogAndReload];
 }

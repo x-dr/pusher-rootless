@@ -4,14 +4,14 @@
 <dict>
 	<key>items</key>
 	<array>
-		<!-- Endpoint -->
+		<!-- 端点 -->
 		<dict>
 			<key>cell</key>
 			<string>PSGroupCell</string>
 			<key>label</key>
-			<string>Endpoint</string>
+			<string>端点</string>
 			<key>footerText</key>
-			<string>GET sends the data in the query string while POST sends the data in a JSON-formatted request body (Content-Type: application/json).</string>
+			<string>GET 会把数据放在查询字符串中发送；POST 会把数据放在 JSON 格式的请求体中发送（Content-Type: application/json）。</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -46,14 +46,14 @@
 			</array>
 		</dict>
 
-		<!-- Authentication -->
+		<!-- 认证 -->
 		<dict>
 			<key>cell</key>
 			<string>PSGroupCell</string>
 			<key>label</key>
-			<string>Authentication</string>
+			<string>认证</string>
 			<key>footerText</key>
-			<string>Param/Header Name is used to determine the name of the parameter to pass. For example, header authentication is typically passed through the 'Access-Token' header. If you are using the Request Body option and your API takes a parameter named 'token', you would enter 'token' as the name.</string>
+			<string>“参数/请求头名称”用于指定要传递的参数名。例如，请求头认证通常通过 “Access-Token” 请求头传递。如果你使用“请求体”选项，并且 API 需要名为 “token” 的参数，请在这里填写 “token”。</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -66,9 +66,9 @@
 			<string>authenticationMethod</string>
 			<key>validTitles</key>
 			<array>
-				<string>None</string>
-				<string>Header</string>
-				<string>Request Body</string>
+				<string>无</string>
+				<string>请求头</string>
+				<string>请求体</string>
 			</array>
 			<key>validValues</key>
 			<array>
@@ -85,7 +85,7 @@
 			<key>key</key>
 			<string>paramName</string>
 			<key>label</key>
-			<string>Param/Header Name:</string>
+			<string>参数/请求头名称：</string>
 			<key>noAutoCorrect</key>
 			<true/>
 		</dict>
@@ -97,17 +97,17 @@
 			<key>key</key>
 			<string>key</string>
 			<key>label</key>
-			<string>Value:</string>
+			<string>值：</string>
 			<key>noAutoCorrect</key>
 			<true/>
 		</dict>
 
-		<!-- App List -->
+		<!-- 应用列表 -->
 		<dict>
 			<key>cell</key>
 			<string>PSGroupCell</string>
 			<key>label</key>
-			<string>Apps</string>
+			<string>应用</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -124,8 +124,8 @@
 			<string>appListIsBlacklist</string>
 			<key>validTitles</key>
 			<array>
-				<string>Blacklist</string>
-				<string>Whitelist</string>
+				<string>黑名单</string>
+				<string>白名单</string>
 			</array>
 			<key>validValues</key>
 			<array>
@@ -141,7 +141,7 @@
 			<key>icon</key>
 			<string>app_list</string>
 			<key>label</key>
-			<string>App List</string>
+			<string>应用列表</string>
 			<key>useSearchBar</key>
 			<true />
 			<key>alphabeticIndexingEnabled</key>
@@ -151,7 +151,7 @@
 			<key>cell</key>
 			<string>PSLinkCell</string>
 			<key>label</key>
-			<string>App Customization</string>
+			<string>应用自定义</string>
 			<key>icon</key>
 			<string>app_list</string>
 			<key>detail</key>
@@ -170,30 +170,30 @@
 			<string>imageShrinkFactor</string>
 		</dict>
 
-		<!-- Options -->
+		<!-- 选项 -->
 		<dict>
 			<key>cell</key>
 			<string>PSGroupCell</string>
 			<key>label</key>
-			<string>Options</string>
+			<string>选项</string>
 			<key>footerText</key>
-			<string>The server may reject the request if the data is too large, which is usually a result of the image being high resolution. Pusher will try to forward the notification 5 times, shrinking the image each time by the factor you specify (if the body is too large). If by the last retry the image is too large, it will remove the image but set the "image" property to a 1 to indicate that an image is attached. The image will initially be resized to fit the maximum width and height unless it is already smaller. The image shrink factor must be greater than 1.0 to work since it is division (a factor of 2 means it will divide the image dimensions in half).
+			<string>如果数据过大，服务器可能会拒绝请求，这通常是因为图片分辨率过高。Pusher 会尝试转发通知 5 次；如果请求体过大，每次都会按你指定的缩小系数压缩图片。最后一次重试时如果图片仍然过大，Pusher 会移除图片，但会把 “image” 属性设为 1，用来表示原通知包含图片。图片会先缩放到不超过最大宽度和高度，除非它本来就更小。图片缩小系数必须大于 1.0 才会生效，因为这里使用除法（系数为 2 表示图片尺寸减半）。
 
-The following properties will be passed to the URL endpoint (via GET or POST parameters) specified above (property names in parentheses) [Must Turn on "Include Icon" and "Include Image" switches above in order to get the corresponding properties below]:
+以下属性会传递到上方指定的 URL 端点（通过 GET 或 POST 参数；括号内为属性名）[需要先开启上方的“包含图标”和“包含图片”开关，才会获得对应属性]：
 
-Device Name (deviceName), App Name (appName), App Bundle ID (appID), Title (title), Subtitle (subtitle), Message (message), Date (date), Base64 Encoded PNG Icon 58x58 (icon), Base64 Encoded Image (image)</string>
+设备名称 (deviceName)、应用名称 (appName)、应用 Bundle ID (appID)、标题 (title)、副标题 (subtitle)、消息 (message)、日期 (date)、Base64 编码的 58x58 PNG 图标 (icon)、Base64 编码的图片 (image)</string>
 		</dict>
 
-		<!-- Date Format -->
+		<!-- 日期格式 -->
 		<dict>
 			<key>cell</key>
 			<string>PSGroupCell</string>
 			<key>footerText</key>
-			<string>INSTRUCTIONS:
-1. Click 'Open Date Format Instructions' above (https://nsdateformatter.com).
-2. Using the reference and examples, create your desired date format and enter it above. If you don't care about the date, you may leave it as the default
+			<string>说明：
+1. 点击上方的“打开日期格式说明”（https://nsdateformatter.com）。
+2. 参考说明和示例，创建你想要的日期格式并填入上方。如果你不关心日期，可以保留默认值。
 
-Example formats for Saturday, April 13, 2019 @ 3:12 AM:
+以下示例对应 2019 年 4 月 13 日星期六凌晨 3:12：
 EEEE, MMM d, yyyy = Saturday, Apr 13, 2019
 MM/dd/yyyy = 04/13/2019
 MM-dd-yyyy HH:mm = 04-13-2019 03:12
@@ -208,7 +208,7 @@ HH:mm:ss.SSS = 03:12:11.678
 			<key>cell</key>
 			<string>PSButtonCell</string>
 			<key>label</key>
-			<string>Open Date Format Instructions</string>
+			<string>打开日期格式说明</string>
 			<key>action</key>
 			<string>openDateFormatInstructions</string>
 		</dict>
@@ -220,12 +220,12 @@ HH:mm:ss.SSS = 03:12:11.678
 			<key>key</key>
 			<string>dateFormat</string>
 			<key>label</key>
-			<string>Date Format:</string>
+			<string>日期格式：</string>
 			<key>noAutoCorrect</key>
 			<true/>
 		</dict>
 	</array>
 	<key>title</key>
-	<string>Custom Service</string>
+	<string>自定义服务</string>
 </dict>
 </plist>

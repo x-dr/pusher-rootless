@@ -66,16 +66,14 @@ static id getPreference(CFStringRef keyRef) {
 
     PSSpecifier *synchronizedGroup = [PSSpecifier emptyGroupSpecifier];
     [synchronizedGroup
-        setProperty:@"Synchronizes all values with the global preferences. "
-                    @"Modifying any of these settings will override that "
-                    @"preference, but synchronizing will remove the override "
-                    @"and follow the global preferences again."
+        setProperty:@"将所有值与全局偏好同步。修改任意设置都会覆盖全局偏好；"
+                    @"重新同步会移除覆盖，并再次跟随全局偏好。"
              forKey:@"footerText"];
 
     _synchronizeSpecifier =
         [PSSpecifier preferenceSpecifierNamed:(synchronizedWithGlobal
-                                                   ? @"Synchronized"
-                                                   : @"Synchronize With Global")
+                                                   ? @"已同步"
+                                                   : @"与全局设置同步")
                                        target:self
                                           set:nil
                                           get:nil
@@ -99,7 +97,7 @@ static id getPreference(CFStringRef keyRef) {
       [self reloadSpecifier:spec animated:YES];
     }
   }
-  [specifier setName:@"Synchronized"];
+  [specifier setName:@"已同步"];
   [specifier setProperty:@NO forKey:@"enabled"];
   [self reloadSpecifier:specifier animated:YES];
 }
@@ -110,16 +108,23 @@ static id getPreference(CFStringRef keyRef) {
   }
   if (value && [specifier.identifier
                    containsString:@"SufficientNotificationSettingsIsAnd"]) {
-    // if val is bool value true, set allow notifications on, else turn it off
+    // 兼容汉化后的 label，同时保留旧英文 ID 的读取路径。
     PSSpecifier *allowNotificationsSpecifier =
-        [self specifierForID:@"Allow Notifications"];
+        [self specifierForID:@"允许通知"];
+    if (!allowNotificationsSpecifier) {
+      allowNotificationsSpecifier = [self specifierForID:@"Allow Notifications"];
+    }
     if (allowNotificationsSpecifier) {
       [allowNotificationsSpecifier performSetterWithValue:value];
       [self reloadSpecifier:allowNotificationsSpecifier animated:YES];
     }
     if (!((NSNumber *)value).boolValue) {
       PSSpecifier *requireANWithORSpecifier =
-          [self specifierForID:@"Require Allow Notifications with OR"];
+          [self specifierForID:@"OR 时要求允许通知"];
+      if (!requireANWithORSpecifier) {
+        requireANWithORSpecifier =
+            [self specifierForID:@"Require Allow Notifications with OR"];
+      }
       if (requireANWithORSpecifier) {
         [requireANWithORSpecifier performSetterWithValue:@YES];
         [self reloadSpecifier:requireANWithORSpecifier animated:YES];
@@ -131,7 +136,7 @@ static id getPreference(CFStringRef keyRef) {
   }
   // enable synchronize button if we change a value
   if (_synchronizeSpecifier) {
-    [_synchronizeSpecifier setName:@"Synchronize With Global"];
+    [_synchronizeSpecifier setName:@"与全局设置同步"];
     [_synchronizeSpecifier setProperty:@YES forKey:@"enabled"];
     [self reloadSpecifier:_synchronizeSpecifier animated:YES];
   }

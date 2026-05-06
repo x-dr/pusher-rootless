@@ -22,6 +22,11 @@ static void setPreference(CFStringRef keyRef, CFPropertyListRef val,
   }
 }
 
+static NSString *const NSPCustomizeAppsSectionActions = @"";
+static NSString *const NSPCustomizeAppsSectionApps = @"应用";
+static NSString *const NSPCustomizeAppsAddAppsTitle = @"添加应用";
+static NSString *const NSPCustomizeAppsNoAppsTitle = @"没有应用";
+
 @implementation NSPCustomizeAppsController
 
 - (void)setAppDefaults:(NSString *)appID {
@@ -60,7 +65,7 @@ static void setPreference(CFStringRef keyRef, CFPropertyListRef val,
 }
 
 - (void)saveAppState {
-  NSArray *appIDs = _data[@"Apps"];
+  NSArray *appIDs = _data[NSPCustomizeAppsSectionApps];
   for (NSString *appID in appIDs) {
     [self setAppDefaults:appID];
   }
@@ -113,9 +118,9 @@ static void setPreference(CFStringRef keyRef, CFPropertyListRef val,
   _table.delegate = self;
   [self.view addSubview:_table];
 
-  self.navigationItem.title = @"App Customization";
+  self.navigationItem.title = @"应用自定义";
   self.navigationItem.rightBarButtonItem =
-      [[UIBarButtonItem alloc] initWithTitle:@"Edit"
+      [[UIBarButtonItem alloc] initWithTitle:@"编辑"
                                        style:UIBarButtonItemStylePlain
                                       target:self
                                       action:@selector(toggleEditing:)];
@@ -153,7 +158,11 @@ static void setPreference(CFStringRef keyRef, CFPropertyListRef val,
 
   _customApps = [(prefs[_prefsKey] ?: @{}) mutableCopy];
 
-  _label = [[self.specifier.name componentsSeparatedByString:@" ("][0] retain];
+  // 列表标题会追加“共 N 个”，返回页面再进入时要先剥掉旧计数。
+  NSString *baseLabel =
+      [self.specifier.name componentsSeparatedByString:@"（"][0];
+  baseLabel = [baseLabel componentsSeparatedByString:@" ("][0];
+  _label = [baseLabel retain];
   [self updateTitle];
 
   if (XEq(_service, PUSHER_SERVICE_PUSHOVER) ||
@@ -216,21 +225,22 @@ static void setPreference(CFStringRef keyRef, CFPropertyListRef val,
               ?: @(PUSHER_DEFAULT_SHRINK_FACTOR)) copy];
   }
 
-  _sections = [@[ @"", @"Apps" ] retain];
+  _sections =
+      [@[ NSPCustomizeAppsSectionActions, NSPCustomizeAppsSectionApps ] retain];
   _data = [@{
-    @"" : @[ @"Add Apps" ],
-    @"Apps" : [NSMutableArray new],
+    NSPCustomizeAppsSectionActions : @[ NSPCustomizeAppsAddAppsTitle ],
+    NSPCustomizeAppsSectionApps : [NSMutableArray new],
   } mutableCopy];
 
-  [_data[@"Apps"] addObjectsFromArray:_customApps.allKeys];
+  [_data[NSPCustomizeAppsSectionApps] addObjectsFromArray:_customApps.allKeys];
 
-  [self sortAppIDArray:_data[@"Apps"]];
+  [self sortAppIDArray:_data[NSPCustomizeAppsSectionApps]];
 
   [_table reloadData];
 }
 
 - (void)updateTitle {
-  self.specifier.name = XStr(@"%@ (%d total)", _label, (int)_customApps.count);
+  self.specifier.name = XStr(@"%@（共 %d 个）", _label, (int)_customApps.count);
   PSListController *listController =
       (PSListController *)[self.specifier propertyForKey:@"psListRef"];
   if (listController) {
@@ -251,18 +261,18 @@ static void setPreference(CFStringRef keyRef, CFPropertyListRef val,
 
 - (void)toggleEditing:(UIBarButtonItem *)barButtonItem {
   [_table setEditing:![_table isEditing] animated:YES];
-  barButtonItem.title = [_table isEditing] ? @"Done" : @"Edit";
+  barButtonItem.title = [_table isEditing] ? @"完成" : @"编辑";
 }
 
 - (void)addAppIDs:(NSArray *)appIDs {
   NSMutableArray *nonOverlappingAppIDs = [NSMutableArray new];
   for (NSString *appID in appIDs) {
-    if (![_data[@"Apps"] containsObject:appID]) {
+    if (![_data[NSPCustomizeAppsSectionApps] containsObject:appID]) {
       [nonOverlappingAppIDs addObject:appID];
     }
   }
-  [_data[@"Apps"] addObjectsFromArray:nonOverlappingAppIDs];
-  [self sortAppIDArray:_data[@"Apps"]];
+  [_data[NSPCustomizeAppsSectionApps] addObjectsFromArray:nonOverlappingAppIDs];
+  [self sortAppIDArray:_data[NSPCustomizeAppsSectionApps]];
   [self saveAppState];
   [_table reloadData];
 }
@@ -296,7 +306,7 @@ static void setPreference(CFStringRef keyRef, CFPropertyListRef val,
     LSApplicationProxy* appProxy = [LSApplicationProxy applicationProxyForIdentifier:appID];
     NSString *appTitle;
     if (appProxy == nil) {
-      appTitle = @"UNKNOWN APP";
+      appTitle = @"未知应用";
     } else {
       appTitle = [appProxy localizedName];
     }
@@ -323,9 +333,9 @@ static void setPreference(CFStringRef keyRef, CFPropertyListRef val,
 - (NSString *)tableView:(UITableView *)table
     titleForHeaderInSection:(NSInteger)section {
   NSString *title = _sections[section];
-  if (XEq(title, @"Apps") && [self tableView:table
-                                 numberOfRowsInSection:section] == 0) {
-    title = @"No Apps";
+  if (XEq(title, NSPCustomizeAppsSectionApps) &&
+      [self tableView:table numberOfRowsInSection:section] == 0) {
+    title = NSPCustomizeAppsNoAppsTitle;
   }
   return title;
 }
@@ -369,8 +379,8 @@ trailingSwipeActionsConfigurationForRowAtIndexPath:(NSIndexPath *)indexPath {
         return [UISwipeActionsConfiguration configurationWithActions:@[]];
     }
     
-    UIContextualAction *deleteAction = [UIContextualAction contextualActionWithStyle:UIContextualActionStyleDestructive 
-                                                                                title:@"Delete" 
+    UIContextualAction *deleteAction = [UIContextualAction contextualActionWithStyle:UIContextualActionStyleDestructive
+                                                                                title:@"删除"
                                                                               handler:^(UIContextualAction *action, UIView *sourceView, void (^completionHandler)(BOOL)) {
                                                                                   [_data[_sections[indexPath.section]] removeObjectAtIndex:indexPath.row];
                                                                                   [self saveAppState];

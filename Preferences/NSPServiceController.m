@@ -19,6 +19,21 @@ static int countAppIDsWithPrefix(NSDictionary *prefs, NSString *prefix) {
   return count;
 }
 
+static BOOL specifierNameMatches(PSSpecifier *specifier, NSString *englishName,
+                                 NSString *chineseName) {
+  return XEq(specifier.name, englishName) || XEq(specifier.name, chineseName);
+}
+
+static NSString *displayNameForService(NSString *service) {
+  if (XEq(service, PUSHER_SERVICE_FEISHU)) {
+    return @"飞书";
+  }
+  if (XEq(service, PUSHER_SERVICE_WECHAT)) {
+    return @"企业微信";
+  }
+  return service;
+}
+
 @implementation NSPServiceController
 
 - (id)initWithService:(NSString *)service
@@ -42,7 +57,7 @@ static int countAppIDsWithPrefix(NSDictionary *prefs, NSString *prefix) {
   // [self setTitle:_service];
   if (!_imageTitleView) {
     UILabel *label = [UILabel new];
-    label.text = _service;
+    label.text = displayNameForService(_service);
     label.font = [UIFont boldSystemFontOfSize:17];
 
     UIImageView *imageView = [[UIImageView alloc] initWithImage:_image];
@@ -115,18 +130,19 @@ static int countAppIDsWithPrefix(NSDictionary *prefs, NSString *prefix) {
 
     for (PSSpecifier *specifier in allSpecifiers) {
       if (specifier.cellType == PSLinkCell) {
-        if (XEq(specifier.name, @"App List")) {
+        if (specifierNameMatches(specifier, @"App List", @"应用列表")) {
           specifier.name = XStr(
-              @"%@ (%d total)", specifier.name,
+              @"%@（共 %d 个）", specifier.name,
               countAppIDsWithPrefix(
                   prefs, [specifier propertyForKey:@"ALSettingsKeyPrefix"]));
           [specifier setProperty:self forKey:@"psListRef"];
-        } else if (XEq(specifier.name, @"App Customization")) {
+        } else if (specifierNameMatches(specifier, @"App Customization",
+                                        @"应用自定义")) {
           NSString *prefsKey =
               _isCustom ? NSPPreferenceCustomServiceCustomAppsKey(_service)
                         : NSPPreferenceBuiltInServiceCustomAppsKey(_service);
           NSArray *customApps = (NSArray *)prefs[prefsKey];
-          specifier.name = XStr(@"%@ (%d total)", specifier.name,
+          specifier.name = XStr(@"%@（共 %d 个）", specifier.name,
                                 customApps ? (int)customApps.count : 0);
           [specifier setProperty:self forKey:@"psListRef"];
         }
@@ -144,8 +160,9 @@ static int countAppIDsWithPrefix(NSDictionary *prefs, NSString *prefix) {
         inserted = YES;
         break;
       } else if (specifier.cellType == PSGroupCell &&
-                 XEq(specifier.identifier,
-                     @"Options")) { // insert at end of options group
+                 (XEq(specifier.identifier, @"Options") ||
+                  XEq(specifier.identifier,
+                      @"选项"))) { // 插入到“选项”分组末尾
         insertOnNext = YES;
       }
       idx += 1;
@@ -163,7 +180,7 @@ static int countAppIDsWithPrefix(NSDictionary *prefs, NSString *prefix) {
       [specifier setProperty:_service forKey:@"service"];
       if (specifier.cellType == PSSegmentCell) {
         NSMutableArray *values = [specifier.values mutableCopy];
-        NSMutableArray *titles = [NSMutableArray arrayWithObject:@"Default"];
+        NSMutableArray *titles = [NSMutableArray arrayWithObject:@"默认"];
         for (id v in values) {
           [titles addObject:specifier.titleDictionary[v]];
         }
@@ -203,7 +220,7 @@ static int countAppIDsWithPrefix(NSDictionary *prefs, NSString *prefix) {
 
     PSSpecifier *sendTestNotificationGroup = [PSSpecifier emptyGroupSpecifier];
     PSSpecifier *sendTestNotification =
-        [PSSpecifier preferenceSpecifierNamed:@"Send Test Notification"
+        [PSSpecifier preferenceSpecifierNamed:@"发送测试通知"
                                        target:self
                                           set:nil
                                           get:nil
@@ -238,9 +255,9 @@ static int countAppIDsWithPrefix(NSDictionary *prefs, NSString *prefix) {
                             userInfo:@{@"service" : _service}];
 
   if (reply[@"success"] && ((NSNumber *)reply[@"success"]).boolValue) {
-    [self displayNotification:XStr(@"%@Sent", PUSHER_TEST_PUSH_RESULT_PREFIX)];
+    [self displayNotification:XStr(@"%@已发送", PUSHER_TEST_PUSH_RESULT_PREFIX)];
   } else {
-    [self displayNotification:XStr(@"%@Failed to Send",
+    [self displayNotification:XStr(@"%@发送失败",
                                    PUSHER_TEST_PUSH_RESULT_PREFIX)];
   }
 }
@@ -261,7 +278,7 @@ static int countAppIDsWithPrefix(NSDictionary *prefs, NSString *prefix) {
          // XLog(@"addNotificationRequest error: %@", error.description);
          if (error) {
            UIAlertController *alert = XAlert(message);
-           [alert addAction:XAlertBtn(@"Ok")];
+           [alert addAction:XAlertBtn(@"好")];
            [self presentViewController:alert animated:YES completion:nil];
          }
        }];

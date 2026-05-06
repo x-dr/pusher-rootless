@@ -13,6 +13,20 @@ static void setPreference(CFStringRef keyRef, CFPropertyListRef val,
   }
 }
 
+static NSString *const NSPServiceSectionEnabled = @"已启用";
+static NSString *const NSPServiceSectionDisabled = @"已停用";
+static NSString *const NSPServicePreferenceEnabledKey = @"Enabled";
+
+static NSString *displayNameForService(NSString *service) {
+  if (XEq(service, PUSHER_SERVICE_FEISHU)) {
+    return @"飞书";
+  }
+  if (XEq(service, PUSHER_SERVICE_WECHAT)) {
+    return @"企业微信";
+  }
+  return service;
+}
+
 @implementation NSPServiceListController
 
 - (void)dealloc {
@@ -46,14 +60,14 @@ static void setPreference(CFStringRef keyRef, CFPropertyListRef val,
   _table.allowsSelectionDuringEditing = YES;
   [self.view addSubview:_table];
   _addNewServiceBarButtonItem =
-      [[UIBarButtonItem alloc] initWithTitle:@"Add"
+      [[UIBarButtonItem alloc] initWithTitle:@"添加"
                                        style:UIBarButtonItemStylePlain
                                       target:self
                                       action:@selector(addNewService)];
 
-  self.navigationItem.title = @"Services";
+  self.navigationItem.title = @"服务";
   self.navigationItem.rightBarButtonItem =
-      [[UIBarButtonItem alloc] initWithTitle:@"Edit"
+      [[UIBarButtonItem alloc] initWithTitle:@"编辑"
                                        style:UIBarButtonItemStylePlain
                                       target:self
                                       action:@selector(toggleEditing:)];
@@ -80,10 +94,13 @@ static void setPreference(CFStringRef keyRef, CFPropertyListRef val,
     CFRelease(keyList);
   }
 
-  _sections = [@[ @"Enabled", @"Disabled" ] retain];
-  _data =
-      [@{@"Enabled" : [NSMutableArray new], @"Disabled" : [NSMutableArray new]}
-          mutableCopy];
+  // 分组标题是中文显示名；偏好中的 Enabled 键仍保留英文以兼容旧数据。
+  _sections =
+      [@[ NSPServiceSectionEnabled, NSPServiceSectionDisabled ] retain];
+  _data = [@{
+    NSPServiceSectionEnabled : [NSMutableArray new],
+    NSPServiceSectionDisabled : [NSMutableArray new]
+  } mutableCopy];
   _services = [BUILTIN_PUSHER_SERVICES retain];
   _customServices = [(NSDictionary *)(_prefs[NSPPreferenceCustomServicesKey]
                                           ?: @{}) mutableCopy];
@@ -94,9 +111,9 @@ static void setPreference(CFStringRef keyRef, CFPropertyListRef val,
   for (NSString *service in _services) {
     NSString *enabledKey = XStr(@"%@Enabled", service);
     if (_prefs[enabledKey] && ((NSNumber *)_prefs[enabledKey]).boolValue) {
-      [_data[@"Enabled"] addObject:service];
+      [_data[NSPServiceSectionEnabled] addObject:service];
     } else {
-      [_data[@"Disabled"] addObject:service];
+      [_data[NSPServiceSectionDisabled] addObject:service];
     }
     _serviceImages[service] =
         [UIImage imageNamed:XStr(@"BuiltInService_%@", service)
@@ -108,12 +125,13 @@ static void setPreference(CFStringRef keyRef, CFPropertyListRef val,
   for (NSString *customService in _customServices.allKeys) {
     _customServices[customService] =
         [(_customServices[customService] ?: @{}) mutableCopy];
+    NSNumber *enabled =
+        _customServices[customService][NSPServicePreferenceEnabledKey];
     if (_customServices[customService] &&
-        _customServices[customService][@"Enabled"] &&
-        ((NSNumber *)_customServices[customService][@"Enabled"]).boolValue) {
-      [_data[@"Enabled"] addObject:customService];
+        enabled && enabled.boolValue) {
+      [_data[NSPServiceSectionEnabled] addObject:customService];
     } else {
-      [_data[@"Disabled"] addObject:customService];
+      [_data[NSPServiceSectionDisabled] addObject:customService];
     }
     _serviceImages[customService] =
         [UIImage imageNamed:XStr(@"CustomService_%@", customService)
@@ -121,9 +139,9 @@ static void setPreference(CFStringRef keyRef, CFPropertyListRef val,
             ?: _defaultImage;
   }
 
-  [_data[@"Enabled"]
+  [_data[NSPServiceSectionEnabled]
       sortUsingSelector:@selector(localizedCaseInsensitiveCompare:)];
-  [_data[@"Disabled"]
+  [_data[NSPServiceSectionDisabled]
       sortUsingSelector:@selector(localizedCaseInsensitiveCompare:)];
 
   [_table reloadData];
@@ -171,9 +189,8 @@ static void setPreference(CFStringRef keyRef, CFPropertyListRef val,
                                size:UIFont.systemFontSize * 1.5f];
   label.textColor = UIColor.whiteColor;
   label.text =
-      @"After setting up your services, remember to enable them by using the "
-      @"'Edit' button in the top right of this page and dragging your services "
-      @"to the 'Enabled' section at the top.\n\nTap anywhere to continue.";
+      @"设置好服务后，记得点击右上角“编辑”，并把要启用的服务拖到顶部的"
+      @"“已启用”分组。\n\n轻点任意位置继续。";
   label.lineBreakMode = NSLineBreakByWordWrapping;
   label.numberOfLines = 0;
   label.translatesAutoresizingMaskIntoConstraints = NO;
@@ -239,7 +256,7 @@ static void setPreference(CFStringRef keyRef, CFPropertyListRef val,
 
 - (void)toggleEditing:(UIBarButtonItem *)barButtonItem {
   [_table setEditing:![_table isEditing] animated:YES];
-  barButtonItem.title = [_table isEditing] ? @"Done" : @"Edit";
+  barButtonItem.title = [_table isEditing] ? @"完成" : @"编辑";
   self.navigationItem.leftBarButtonItem =
       [_table isEditing] ? _addNewServiceBarButtonItem : nil;
   if (![_table isEditing]) {
@@ -248,17 +265,20 @@ static void setPreference(CFStringRef keyRef, CFPropertyListRef val,
       NSString *enabledKey = XStr(@"%@Enabled", service);
       setPreference((__bridge CFStringRef)enabledKey,
                     (__bridge CFNumberRef)
-                        @([_data[@"Enabled"] containsObject:service]),
+                        @([_data[NSPServiceSectionEnabled]
+                            containsObject:service]),
                     NO);
     }
     for (NSString *customService in _customServices.allKeys) {
       NSNumber *customServiceEnabled =
-          @([_data[@"Enabled"] containsObject:customService]);
+          @([_data[NSPServiceSectionEnabled] containsObject:customService]);
       if (!_customServices[customService]) {
         _customServices[customService] =
-            [@{@"Enabled" : customServiceEnabled} mutableCopy];
+            [@{NSPServicePreferenceEnabledKey : customServiceEnabled}
+                mutableCopy];
       } else {
-        _customServices[customService][@"Enabled"] = customServiceEnabled;
+        _customServices[customService][NSPServicePreferenceEnabledKey] =
+            customServiceEnabled;
       }
     }
     [self saveCustomServices]; // will notify post
@@ -267,11 +287,11 @@ static void setPreference(CFStringRef keyRef, CFPropertyListRef val,
 }
 
 - (void)addNewService {
-  UIAlertController *alert = XAlertTitle(@"Add Custom Service", nil);
+  UIAlertController *alert = XAlertTitle(@"添加自定义服务", nil);
   [alert addTextFieldWithConfigurationHandler:^(UITextField *textField) {
-    textField.placeholder = @"Service Name";
+    textField.placeholder = @"服务名称";
   }];
-  [alert addAction:[UIAlertAction actionWithTitle:@"Cancel"
+  [alert addAction:[UIAlertAction actionWithTitle:@"取消"
                                             style:UIAlertActionStyleCancel
                                           handler:nil]];
   id handler = ^(UIAlertAction *action) {
@@ -306,15 +326,16 @@ static void setPreference(CFStringRef keyRef, CFPropertyListRef val,
         [self addNewService];
       };
       UIAlertController *existsAlert =
-          XAlertTitle(@"Error", @"A service with that name already exists.");
-      [existsAlert addAction:XAlertBtnHandler(@"Ok", existsHandler)];
+          XAlertTitle(@"错误", @"已存在同名服务。");
+      [existsAlert addAction:XAlertBtnHandler(@"好", existsHandler)];
       [self presentViewController:existsAlert animated:YES completion:nil];
       XLog(@"newServiceName already exists");
       return;
     }
-    _customServices[newServiceName] = [@{@"Enabled" : @NO} mutableCopy];
-    [_data[@"Disabled"] addObject:newServiceName];
-    [_data[@"Disabled"]
+    _customServices[newServiceName] =
+        [@{NSPServicePreferenceEnabledKey : @NO} mutableCopy];
+    [_data[NSPServiceSectionDisabled] addObject:newServiceName];
+    [_data[NSPServiceSectionDisabled]
         sortUsingSelector:@selector(localizedCaseInsensitiveCompare:)];
 
     UIImage *defaultImage = _defaultImage;
@@ -329,7 +350,7 @@ static void setPreference(CFStringRef keyRef, CFPropertyListRef val,
           withRowAnimation:UITableViewRowAnimationAutomatic];
     [self saveCustomServices];
   };
-  [alert addAction:XAlertBtnHandler(@"Add", handler)];
+  [alert addAction:XAlertBtnHandler(@"添加", handler)];
   [self presentViewController:alert animated:YES completion:nil];
 }
 
@@ -388,7 +409,7 @@ static void setPreference(CFStringRef keyRef, CFPropertyListRef val,
       [table dequeueReusableCellWithIdentifier:@"ServiceCell"
                                   forIndexPath:indexPath];
   NSString *service = _data[_sections[indexPath.section]][indexPath.row];
-  cell.textLabel.text = service;
+  cell.textLabel.text = displayNameForService(service);
   cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
   cell.imageView.image = _serviceImages[service];
   return cell;
@@ -464,12 +485,13 @@ static void setPreference(CFStringRef keyRef, CFPropertyListRef val,
 
 - (void)renameService:(NSString *)currService {
 
-  UIAlertController *alert = XAlertTitle(XStr(@"Rename %@", currService), nil);
+  UIAlertController *alert =
+      XAlertTitle(XStr(@"重命名 %@", currService), nil);
   [alert addTextFieldWithConfigurationHandler:^(UITextField *textField) {
-    textField.placeholder = @"Service Name";
+    textField.placeholder = @"服务名称";
     textField.text = currService;
   }];
-  [alert addAction:[UIAlertAction actionWithTitle:@"Cancel"
+  [alert addAction:[UIAlertAction actionWithTitle:@"取消"
                                             style:UIAlertActionStyleCancel
                                           handler:nil]];
   id handler = ^(UIAlertAction *action) {
@@ -489,9 +511,8 @@ static void setPreference(CFStringRef keyRef, CFPropertyListRef val,
         [self renameService:currService];
       };
       UIAlertController *existsAlert =
-          XAlertTitle(XStr(@"Rename %@", currService),
-                      @"A service with that name already exists.");
-      [existsAlert addAction:XAlertBtnHandler(@"Ok", existsHandler)];
+          XAlertTitle(XStr(@"重命名 %@", currService), @"已存在同名服务。");
+      [existsAlert addAction:XAlertBtnHandler(@"好", existsHandler)];
       [self presentViewController:existsAlert animated:YES completion:nil];
       return;
     }
@@ -564,9 +585,11 @@ static void setPreference(CFStringRef keyRef, CFPropertyListRef val,
     notify_post(PUSHER_PREFS_NOTIFICATION);
 
     NSString *currSection =
-        ((NSNumber *)_customServices[newServiceName][@"Enabled"]).boolValue
-            ? @"Enabled"
-            : @"Disabled";
+        ((NSNumber *)_customServices[newServiceName]
+                     [NSPServicePreferenceEnabledKey])
+                .boolValue
+            ? NSPServiceSectionEnabled
+            : NSPServiceSectionDisabled;
     [_data[currSection] removeObject:currService];
     [_data[currSection] addObject:newServiceName];
     [_data[currSection]
@@ -576,7 +599,7 @@ static void setPreference(CFStringRef keyRef, CFPropertyListRef val,
                                indexSetWithIndexesInRange:NSMakeRange(0, 2)]
           withRowAnimation:UITableViewRowAnimationFade];
   };
-  [alert addAction:XAlertBtnHandler(@"Rename", handler)];
+  [alert addAction:XAlertBtnHandler(@"重命名", handler)];
   [self presentViewController:alert animated:YES completion:nil];
 }
 

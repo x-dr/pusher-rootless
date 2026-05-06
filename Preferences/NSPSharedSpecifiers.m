@@ -24,6 +24,12 @@ static void setPreference(CFStringRef keyRef, CFPropertyListRef val,
   }
 }
 
+// UI 名称已经汉化，但部分逻辑仍需要兼容旧英文 plist 或未迁移的自定义页。
+static BOOL specifierNameMatches(PSSpecifier *specifier, NSString *englishName,
+                                 NSString *chineseName) {
+  return XEq(specifier.name, englishName) || XEq(specifier.name, chineseName);
+}
+
 @implementation NSPSharedSpecifiers
 
 + (NSArray *)get:(NSString *)service
@@ -65,10 +71,11 @@ static void setPreference(CFStringRef keyRef, CFPropertyListRef val,
             containsObject:@(specifier
                                  .cellType)]) { // don't set these properties on
                                                 // group specifiers
-      if (XEq(specifier.name, @"App List")) {
+      if (specifierNameMatches(specifier, @"App List", @"应用列表")) {
         [specifier setProperty:NSPPreferenceCustomServiceBLPrefix(service)
                         forKey:@"ALSettingsKeyPrefix"];
-      } else if (XEq(specifier.name, @"App Customization")) {
+      } else if (specifierNameMatches(specifier, @"App Customization",
+                                      @"应用自定义")) {
         [specifier setProperty:service forKey:@"service"];
       }
       continue;
@@ -87,7 +94,7 @@ static void setPreference(CFStringRef keyRef, CFPropertyListRef val,
   BOOL isCustomApp = appID != nil;
 
   PSSpecifier *includeIcon = [PSSpecifier
-      preferenceSpecifierNamed:@"Include Icon"
+      preferenceSpecifierNamed:@"包含图标"
                         target:self
                            set:@selector(setPreferenceValue:forCustomSpecifier:)
                            get:@selector(readCustomPreferenceValue:)
@@ -101,7 +108,7 @@ static void setPreference(CFStringRef keyRef, CFPropertyListRef val,
   [includeIcon setProperty:service forKey:@"service"];
 
   PSSpecifier *includeImage = [PSSpecifier
-      preferenceSpecifierNamed:@"Include Image"
+      preferenceSpecifierNamed:@"包含图片"
                         target:self
                            set:@selector(setPreferenceValue:forCustomSpecifier:)
                            get:@selector(readCustomPreferenceValue:)
@@ -115,7 +122,7 @@ static void setPreference(CFStringRef keyRef, CFPropertyListRef val,
   [includeImage setProperty:service forKey:@"service"];
 
   PSSpecifier *imageMaxWidth = [PSSpecifier
-      preferenceSpecifierNamed:@"Maximum Image Width (pixels)"
+      preferenceSpecifierNamed:@"最大图片宽度（像素）"
                         target:self
                            set:@selector(setPreferenceValue:forCustomSpecifier:)
                            get:@selector(readCustomPreferenceValue:)
@@ -130,7 +137,7 @@ static void setPreference(CFStringRef keyRef, CFPropertyListRef val,
   [imageMaxWidth setProperty:service forKey:@"service"];
 
   PSSpecifier *imageMaxHeight = [PSSpecifier
-      preferenceSpecifierNamed:@"Maximum Image Height (pixels)"
+      preferenceSpecifierNamed:@"最大图片高度（像素）"
                         target:self
                            set:@selector(setPreferenceValue:forCustomSpecifier:)
                            get:@selector(readCustomPreferenceValue:)
@@ -145,7 +152,7 @@ static void setPreference(CFStringRef keyRef, CFPropertyListRef val,
   [imageMaxHeight setProperty:service forKey:@"service"];
 
   PSSpecifier *imageShrinkFactor = [PSSpecifier
-      preferenceSpecifierNamed:@"Image Shrink Factor Upon Retry"
+      preferenceSpecifierNamed:@"重试时图片缩小系数"
                         target:self
                            set:@selector(setPreferenceValue:forCustomSpecifier:)
                            get:@selector(readCustomPreferenceValue:)
@@ -179,7 +186,7 @@ static void setPreference(CFStringRef keyRef, CFPropertyListRef val,
 
 + (NSArray *)pushover:(NSString *)appID {
   PSSpecifier *devices =
-      [PSSpecifier preferenceSpecifierNamed:@"Receiving Devices"
+      [PSSpecifier preferenceSpecifierNamed:@"接收设备"
                                      target:nil
                                         set:nil
                                         get:nil
@@ -187,7 +194,7 @@ static void setPreference(CFStringRef keyRef, CFPropertyListRef val,
                                        cell:PSLinkCell
                                        edit:nil];
   PSSpecifier *sounds =
-      [PSSpecifier preferenceSpecifierNamed:@"Notification Sound"
+      [PSSpecifier preferenceSpecifierNamed:@"通知声音"
                                      target:nil
                                         set:nil
                                         get:nil
@@ -220,7 +227,7 @@ static void setPreference(CFStringRef keyRef, CFPropertyListRef val,
 
 + (NSArray *)pushbullet:(NSString *)appID {
   PSSpecifier *devices =
-      [PSSpecifier preferenceSpecifierNamed:@"Receiving Devices"
+      [PSSpecifier preferenceSpecifierNamed:@"接收设备"
                                      target:nil
                                         set:nil
                                         get:nil
@@ -243,7 +250,7 @@ static void setPreference(CFStringRef keyRef, CFPropertyListRef val,
   BOOL isCustomApp = appID != nil;
 
   PSSpecifier *eventName = [PSSpecifier
-      preferenceSpecifierNamed:@"Event Name"
+      preferenceSpecifierNamed:@"事件名称"
                         target:self
                            set:@selector(setPreferenceValue:
                                    forBuiltInServiceSpecifier:)
@@ -260,7 +267,7 @@ static void setPreference(CFStringRef keyRef, CFPropertyListRef val,
   [eventName setProperty:@"eventName" forKey:@"customAppsPrefsKey"];
 
   PSSpecifier *includeIcon = [PSSpecifier
-      preferenceSpecifierNamed:@"Include Icon"
+      preferenceSpecifierNamed:@"包含图标"
                         target:self
                            set:@selector(setPreferenceValue:
                                    forBuiltInServiceSpecifier:)
@@ -277,7 +284,7 @@ static void setPreference(CFStringRef keyRef, CFPropertyListRef val,
   [includeIcon setProperty:@"includeIcon" forKey:@"customAppsPrefsKey"];
 
   PSSpecifier *curateData = [PSSpecifier
-      preferenceSpecifierNamed:@"Curate Request Data"
+      preferenceSpecifierNamed:@"整理请求数据"
                         target:self
                            set:@selector(setPreferenceValue:
                                    forBuiltInServiceSpecifier:)
@@ -306,7 +313,7 @@ static void setPreference(CFStringRef keyRef, CFPropertyListRef val,
   BOOL isCustomApp = appID != nil;
 
   PSSpecifier *touser = [PSSpecifier
-      preferenceSpecifierNamed:@"Touser"
+      preferenceSpecifierNamed:@"接收人（touser）"
                         target:self
                            set:@selector(setPreferenceValue:
                                    forBuiltInServiceSpecifier:)
@@ -333,7 +340,7 @@ static void setPreference(CFStringRef keyRef, CFPropertyListRef val,
   BOOL isCustomApp = appID != nil;
 
   PSSpecifier *includeIcon = [PSSpecifier
-      preferenceSpecifierNamed:@"Include Icon"
+      preferenceSpecifierNamed:@"包含图标"
                         target:self
                            set:@selector(setPreferenceValue:
                                    forBuiltInServiceSpecifier:)
@@ -351,7 +358,7 @@ static void setPreference(CFStringRef keyRef, CFPropertyListRef val,
   [includeIcon setProperty:@"includeIcon" forKey:@"customAppsPrefsKey"];
 
   PSSpecifier *includeImage = [PSSpecifier
-      preferenceSpecifierNamed:@"Include Image"
+      preferenceSpecifierNamed:@"包含图片"
                         target:self
                            set:@selector(setPreferenceValue:
                                    forBuiltInServiceSpecifier:)
@@ -369,7 +376,7 @@ static void setPreference(CFStringRef keyRef, CFPropertyListRef val,
   [includeImage setProperty:@"includeImage" forKey:@"customAppsPrefsKey"];
 
   PSSpecifier *imageMaxWidth = [PSSpecifier
-      preferenceSpecifierNamed:@"Maximum Image Width (pixels)"
+      preferenceSpecifierNamed:@"最大图片宽度（像素）"
                         target:self
                            set:@selector(setPreferenceValue:
                                    forBuiltInServiceSpecifier:)
@@ -388,7 +395,7 @@ static void setPreference(CFStringRef keyRef, CFPropertyListRef val,
   [imageMaxWidth setProperty:@"imageMaxWidth" forKey:@"customAppsPrefsKey"];
 
   PSSpecifier *imageMaxHeight = [PSSpecifier
-      preferenceSpecifierNamed:@"Maximum Image Height (pixels)"
+      preferenceSpecifierNamed:@"最大图片高度（像素）"
                         target:self
                            set:@selector(setPreferenceValue:
                                    forBuiltInServiceSpecifier:)
@@ -407,7 +414,7 @@ static void setPreference(CFStringRef keyRef, CFPropertyListRef val,
   [imageMaxHeight setProperty:@"imageMaxHeight" forKey:@"customAppsPrefsKey"];
 
   PSSpecifier *imageShrinkFactor = [PSSpecifier
-      preferenceSpecifierNamed:@"Image Shrink Factor Upon Retry"
+      preferenceSpecifierNamed:@"重试时图片缩小系数"
                         target:self
                            set:@selector(setPreferenceValue:
                                    forBuiltInServiceSpecifier:)

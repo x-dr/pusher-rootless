@@ -4,12 +4,12 @@
 <dict>
 	<key>items</key>
 	<array>
-		<!-- Device Conditions -->
+		<!-- 设备条件 -->
 		<dict>
 			<key>cell</key>
 			<string>PSGroupCell</string>
 			<key>label</key>
-			<string>Device Conditions</string>
+			<string>设备条件</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -28,9 +28,9 @@
 			<string>whenToPush</string>
 			<key>validTitles</key>
 			<array>
-				<string>Locked</string>
-				<string>Either</string>
-				<string>Unlocked</string>
+				<string>锁定时</string>
+				<string>任意状态</string>
+				<string>解锁时</string>
 			</array>
 			<key>validValues</key>
 			<array>
@@ -56,9 +56,9 @@
 			<string>whatNetwork</string>
 			<key>validTitles</key>
 			<array>
-				<string>Any Network</string>
-				<string>WiFi Only</string>
-				<string>Cellular Only</string>
+				<string>任意网络</string>
+				<string>仅 Wi-Fi</string>
+				<string>仅蜂窝网络</string>
 			</array>
 			<key>validValues</key>
 			<array>
@@ -80,14 +80,14 @@
 			<key>icon</key>
 			<string>sns</string>
 			<key>label</key>
-			<string>Sufficient Notification Settings</string>
+			<string>通知条件</string>
 		</dict>
 
 		<dict>
 			<key>cell</key>
 			<string>PSGroupCell</string>
 			<key>footerText</key>
-			<string>Only keeps logs for the last 100 notifications.</string>
+			<string>仅保留最近 100 条通知日志。</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -97,10 +97,10 @@
 			<key>icon</key>
 			<string>log</string>
 			<key>label</key>
-			<string>Log</string>
+			<string>日志</string>
 		</dict>
 	</array>
 	<key>title</key>
-	<string>Global Settings</string>
+	<string>全局设置</string>
 </dict>
 </plist>

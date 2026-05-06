@@ -27,7 +27,7 @@
 
 - (NSArray *)specifiers {
   if (!_specifiers) {
-    _specifiers = [[[@[ [PSSpecifier groupSpecifierWithName:@"Customize"] ]
+    _specifiers = [[[@[ [PSSpecifier groupSpecifierWithName:@"自定义"] ]
         arrayByAddingObjectsFromArray:[NSPSharedSpecifiers
                                                       get:_service
                                                 withAppID:_appID
