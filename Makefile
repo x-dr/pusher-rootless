@@ -6,7 +6,7 @@ THEOS_PACKAGE_SCHEME=rootless
 include $(THEOS)/makefiles/common.mk
 
 TWEAK_NAME = Pusher
-Pusher_FILES = Tweak.xm NSPTestPush.xm UIImage+ReplaceColor.m iOSVersion.m
+Pusher_FILES = Tweak.xm NSPTestPush.xm NotifyHubService.m UIImage+ReplaceColor.m iOSVersion.m
 Pusher_LIBRARIES = rocketbootstrap
 Pusher_FRAMEWORKS = UIKit Foundation
 Pusher_PRIVATE_FRAMEWORKS = AppSupport BulletinBoard

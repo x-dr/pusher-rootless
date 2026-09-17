@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>items</key>
+	<array>
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+			<key>label</key>
+			<string>接入点</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSEditTextCell</string>
+			<key>detail</key>
+			<string>PSDetailController</string>
+			<key>defaults</key>
+			<string>com.noahsaso.pusher</string>
+			<key>PostNotification</key>
+			<string>com.noahsaso.pusher/prefs</string>
+			<key>key</key>
+			<string>NotifyHubServerURL</string>
+			<key>label</key>
+			<string>Webhook URL：</string>
+			<key>isURL</key>
+			<true/>
+			<key>noAutoCorrect</key>
+			<true/>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSecureEditTextCell</string>
+			<key>detail</key>
+			<string>PSDetailController</string>
+			<key>defaults</key>
+			<string>com.noahsaso.pusher</string>
+			<key>PostNotification</key>
+			<string>com.noahsaso.pusher/prefs</string>
+			<key>key</key>
+			<string>NotifyHubToken</string>
+			<key>label</key>
+			<string>Bearer Token：</string>
+			<key>noAutoCorrect</key>
+			<true/>
+		</dict>
+
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+			<key>label</key>
+			<string>应用</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSegmentCell</string>
+			<key>default</key>
+			<true/>
+			<key>defaults</key>
+			<string>com.noahsaso.pusher</string>
+			<key>PostNotification</key>
+			<string>com.noahsaso.pusher/prefs</string>
+			<key>detail</key>
+			<string>PSListItemsController</string>
+			<key>key</key>
+			<string>NotifyHubAppListIsBlacklist</string>
+			<key>validTitles</key>
+			<array>
+				<string>黑名单</string>
+				<string>白名单</string>
+			</array>
+			<key>validValues</key>
+			<array>
+				<true/>
+				<false/>
+			</array>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSLinkCell</string>
+			<key>detail</key>
+			<string>NSPAppListController</string>
+			<key>icon</key>
+			<string>app_list</string>
+			<key>label</key>
+			<string>应用列表</string>
+			<key>ALSettingsKeyPrefix</key>
+			<string>NotifyHubBL-</string>
+			<key>useSearchBar</key>
+			<true/>
+			<key>alphabeticIndexingEnabled</key>
+			<true/>
+		</dict>
+
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+			<key>label</key>
+			<string>说明</string>
+			<key>footerText</key>
+			<string>在 NotifyHub 创建使用 Bearer 鉴权的接入点，填入完整 Webhook URL（/api/v1/hooks/接入点ID）和仅展示一次的密钥。通知按标准事件发送，级别默认为 info；具体转发渠道由 NotifyHub 规则决定。</string>
+		</dict>
+	</array>
+	<key>title</key>
+	<string>NotifyHub</string>
+</dict>
+</plist>

@@ -1,4 +1,5 @@
 #import "NSPTestPush.h"
+#import "NotifyHubService.h"
 #import "global.h"
 #import "helpers.h"
 #import "iOSVersion.m"
@@ -318,6 +319,8 @@ static NSString *getServiceURL(NSString *service, NSDictionary *options) {
         finalURL = PUSHER_SERVICE_BARK_URL;
     }
     return finalURL;
+  } else if (XEq(service, PUSHER_SERVICE_NOTIFYHUB)) {
+    return NSPNotifyHubNormalizedWebhookURL(options[@"serverURL"]);
   } else if (XEq(service, PUSHER_SERVICE_WECHAT)) {
     return PUSHER_SERVICE_WECHAT_URL;
   }
@@ -352,7 +355,8 @@ static PusherAuthorizationType getServiceAuthType(NSString *service,
   } else if (XEq(service, PUSHER_SERVICE_PUSHOVER)) {
     return PusherAuthorizationTypeCredentials;
   } else if (XEq(service, PUSHER_SERVICE_PUSHBULLET) ||
-             XEq(service, PUSHER_SERVICE_PUSHER_RECEIVER)) {
+             XEq(service, PUSHER_SERVICE_PUSHER_RECEIVER) ||
+             XEq(service, PUSHER_SERVICE_NOTIFYHUB)) {
     return PusherAuthorizationTypeHeader;
   } else if (XEq(service, PUSHER_SERVICE_WECHAT)) {
     return PusherAuthorizationTypeReplaceDynamicKey;
@@ -1076,6 +1080,20 @@ static NSString *prefsSayNo(BBServer *server, BBBulletin *bulletin) {
     imageShrinkFactor =
         customAppPref[@"imageShrinkFactor"] ?: imageShrinkFactor;
   }
+  if (XEq(service, PUSHER_SERVICE_NOTIFYHUB)) {
+    NSString *token = servicePrefs[@"token"];
+    NSString *trimmedToken = [token
+        stringByTrimmingCharactersInSet:
+            NSCharacterSet.whitespaceAndNewlineCharacterSet];
+    if (url.length == 0 || trimmedToken.length == 0) {
+      XLog(@"[S:%@,A:%@] NotifyHub configuration is invalid", service,
+           appName);
+      addToLogIfEnabled(
+          service, bulletin,
+          @"NotifyHub 配置无效，请检查 Webhook URL 和 Bearer Token");
+      return;
+    }
+  }
   // Send
   PusherAuthorizationType authType = getServiceAuthType(service, servicePrefs);
   NSDictionary *infoDict = [self
@@ -1104,6 +1122,13 @@ static NSString *prefsSayNo(BBServer *server, BBBulletin *bulletin) {
                         @"token" : servicePrefs[@"token"] ?: @"",
                         @"user" : servicePrefs[@"user"] ?: @"",
                         @"key" : servicePrefs[@"key"] ?: @"",
+                        @"eventID" : XEq(service, PUSHER_SERVICE_NOTIFYHUB)
+                            ? NSPNotifyHubEventID(
+                                  bulletin.bulletinID
+                                      ?: bulletin.publisherBulletinID
+                                      ?: bulletin.recordID,
+                                  bulletin.date)
+                            : @"",
                         @"paramName" : authType ==
                                 PusherAuthorizationTypeCredentials
                             ? XStrDefault(servicePrefs[@"paramName"], @"key")
@@ -1208,6 +1233,11 @@ static NSString *prefsSayNo(BBServer *server, BBBulletin *bulletin) {
       @"title": dictionary[@"title"],
       @"body": dictionary[@"message"]
     };
+  } else if (XEq(service, PUSHER_SERVICE_NOTIFYHUB)) {
+    BBBulletin *bulletin = dictionary[@"bulletin"];
+    return NSPNotifyHubPayload(dictionary[@"title"], dictionary[@"message"],
+                               dictionary[@"appName"], bulletin.sectionID,
+                               UIDevice.currentDevice.name, bulletin.date);
   } else if (XEq(service, PUSHER_SERVICE_WECHAT)) {
     NSString *touser = dictionary[@"touser"];
     return @{
@@ -1343,6 +1373,12 @@ static NSString *prefsSayNo(BBServer *server, BBBulletin *bulletin) {
     return @{@"key" : dictionary[@"key"]};
   } else if (XEq(service, PUSHER_SERVICE_PUSHER_RECEIVER)) {
     return @{@"headerName" : @"x-apikey", @"value" : dictionary[@"key"]};
+  } else if (XEq(service, PUSHER_SERVICE_NOTIFYHUB)) {
+    return @{
+      @"headerName" : @"Authorization",
+      @"value" : XStr(@"Bearer %@", dictionary[@"token"]),
+      @"eventID" : dictionary[@"eventID"]
+    };
   }
 
   // custom services
@@ -1437,7 +1473,7 @@ static NSString *prefsSayNo(BBServer *server, BBBulletin *bulletin) {
                                           whitespaceAndNewlineCharacterSet]];
   addToLogIfEnabled(service, bulletin, @"URL", newUrlString);
   NSURL *requestURL = [NSURL URLWithString:newUrlString];
-  if (!requestURL) {
+  if (!requestURL || newUrlString.length == 0) {
     XLog(@"Invalid URL: %@", newUrlString);
     addToLogIfEnabled(service, bulletin, @"Invalid URL");
     return;
@@ -1452,9 +1488,16 @@ static NSString *prefsSayNo(BBServer *server, BBBulletin *bulletin) {
   if (authType == PusherAuthorizationTypeHeader) {
     [request setValue:credentials[@"value"]
         forHTTPHeaderField:credentials[@"headerName"]];
+    NSString *loggedHeaderValue =
+        XEq(service, PUSHER_SERVICE_NOTIFYHUB) ? @"[已隐藏]"
+                                               : credentials[@"value"];
     addToLogIfEnabled(
         service, bulletin, @"Header",
-        XStr(@"%@: %@", credentials[@"headerName"], credentials[@"value"]));
+        XStr(@"%@: %@", credentials[@"headerName"], loggedHeaderValue));
+  }
+  if (XEq(service, PUSHER_SERVICE_NOTIFYHUB)) {
+    [request setValue:credentials[@"eventID"]
+        forHTTPHeaderField:@"X-NotifyHub-Event-Id"];
   }
 
   if (XEq(method, @"POST")) {
@@ -1471,9 +1514,13 @@ static NSString *prefsSayNo(BBServer *server, BBBulletin *bulletin) {
     [request setValue:@"application/json" forHTTPHeaderField:@"Accept"];
     [request setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
 
+    NSJSONWritingOptions jsonOptions = NSJSONWritingPrettyPrinted;
+    if (XEq(service, PUSHER_SERVICE_NOTIFYHUB)) {
+      jsonOptions |= NSJSONWritingSortedKeys;
+    }
     NSData *requestData =
         [NSJSONSerialization dataWithJSONObject:infoDictForRequest
-                                        options:NSJSONWritingPrettyPrinted
+                                        options:jsonOptions
                                           error:nil];
     [request setValue:XStr(@"%d", (int)requestData.length)
         forHTTPHeaderField:@"Content-Length"];
@@ -1481,7 +1528,10 @@ static NSString *prefsSayNo(BBServer *server, BBBulletin *bulletin) {
   }
 
   // use async way to connect network
-  [[[NSURLSession sharedSession]
+  NSURLSession *session = XEq(service, PUSHER_SERVICE_NOTIFYHUB)
+                              ? NSPNotifyHubSession()
+                              : NSURLSession.sharedSession;
+  [[session
       dataTaskWithRequest:request
         completionHandler:^(NSData *data, NSURLResponse *response,
                             NSError *error) {
@@ -1490,8 +1540,14 @@ static NSString *prefsSayNo(BBServer *server, BBBulletin *bulletin) {
           NSString *retryKey =
               retriesLeftKeyForBulletinAndService(bulletin, service);
           NSNumber *retriesLeft = pusherRetriesLeft[retryKey];
+          NSString *notifyHubFailureReason = nil;
+          BOOL requestSucceeded = data.length > 0 && error == nil;
+          if (XEq(service, PUSHER_SERVICE_NOTIFYHUB)) {
+            requestSucceeded = NSPNotifyHubResponseIsAccepted(
+                data, response, error, &notifyHubFailureReason);
+          }
 
-          if (data.length && error == nil) {
+          if (requestSucceeded) {
             NSString *dataStr =
                 [[NSString alloc] initWithData:data
                                       encoding:NSUTF8StringEncoding];
@@ -1564,7 +1620,11 @@ static NSString *prefsSayNo(BBServer *server, BBBulletin *bulletin) {
             XLog(@"%@ Success: %@", logString, dataStr);
             [pusherRetriesLeft removeObjectForKey:retryKey];
           } else {
-            if (error) {
+            if (notifyHubFailureReason) {
+              addToLogIfEnabled(service, bulletin, @"Network Response: Error",
+                                notifyHubFailureReason, YES);
+              XLog(@"%@ Error: %@", logString, notifyHubFailureReason);
+            } else if (error) {
               addToLogIfEnabled(service, bulletin, @"Network Response: Error",
                                 error.description, YES);
               XLog(@"%@ Error: %@", logString, error);
