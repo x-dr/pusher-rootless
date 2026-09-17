@@ -45,9 +45,15 @@ jobs:
         cp AltList.h $THEOS/include/AltList/
         cd ..
 
-    - name: Patch PSSpecifier
+    - name: Ensure PSSpecifier ivars
       run: |
-        sed -i '' 's/SEL action;/SEL action;\n\tSEL setter;\n\tSEL getter;/' $THEOS/vendor/include/Preferences/PSSpecifier.h
+        PSSPECIFIER_HEADER="$THEOS/vendor/include/Preferences/PSSpecifier.h"
+        if ! grep -Eq '^[[:space:]]*SEL[[:space:]]+setter[[:space:]]*;' "$PSSPECIFIER_HEADER"; then
+          sed -i '' 's/SEL action;/SEL action;\n\tSEL setter;/' "$PSSPECIFIER_HEADER"
+        fi
+        if ! grep -Eq '^[[:space:]]*SEL[[:space:]]+getter[[:space:]]*;' "$PSSPECIFIER_HEADER"; then
+          sed -i '' 's/SEL action;/SEL action;\n\tSEL getter;/' "$PSSPECIFIER_HEADER"
+        fi
 
     - name: Sync package version with tag
       if: startsWith(github.ref, 'refs/tags/v')
