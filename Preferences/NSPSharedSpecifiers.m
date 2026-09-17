@@ -82,9 +82,7 @@ static BOOL specifierNameMatches(PSSpecifier *specifier, NSString *englishName,
     }
     [specifier setProperty:@YES forKey:@"enabled"];
     [specifier setProperty:@NO forKey:@"isCustomApp"];
-    specifier->setter = @selector(setPreferenceValue:forCustomSpecifier:);
-    specifier->getter = @selector(readCustomPreferenceValue:);
-    specifier.target = self;
+    [specifier setProperty:@YES forKey:@"usesServicePreferenceRouting"];
   }
 
   return specifiers;

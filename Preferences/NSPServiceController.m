@@ -199,22 +199,17 @@ static NSString *displayNameForService(NSString *service) {
         continue;
       }
       [specifier setProperty:@NO forKey:@"isCustomApp"];
+      [specifier setProperty:@YES forKey:@"usesServicePreferenceRouting"];
       // [specifier setProperty:[specifier propertyForKey:@"key"]
       // forKey:@"globalKey"];
       if (_isCustom) {
-        specifier->setter = @selector(setPreferenceValue:forCustomSpecifier:);
-        specifier->getter = @selector(readCustomPreferenceValue:);
         [specifier setProperty:[specifier propertyForKey:@"customServiceKey"]
                         forKey:@"key"];
       } else {
-        specifier->setter = @selector(setPreferenceValue:
-                              forBuiltInServiceSpecifier:);
-        specifier->getter = @selector(readBuiltInServicePreferenceValue:);
         [specifier setProperty:XStr(@"%@%@", _service,
                                     [specifier propertyForKey:@"key"])
                         forKey:@"key"];
       }
-      specifier.target = NSPSharedSpecifiers.class;
     }
     [allSpecifiers addObjectsFromArray:globalSpecifiers];
 
@@ -238,6 +233,33 @@ static NSString *displayNameForService(NSString *service) {
   }
 
   return _specifiers;
+}
+
+- (void)setPreferenceValue:(id)value specifier:(PSSpecifier *)specifier {
+  if (!((NSNumber *)[specifier propertyForKey:@"usesServicePreferenceRouting"])
+           .boolValue) {
+    [super setPreferenceValue:value specifier:specifier];
+    return;
+  }
+
+  if (_isCustom) {
+    [NSPSharedSpecifiers setPreferenceValue:value forCustomSpecifier:specifier];
+  } else {
+    [NSPSharedSpecifiers setPreferenceValue:value
+                 forBuiltInServiceSpecifier:specifier];
+  }
+}
+
+- (id)readPreferenceValue:(PSSpecifier *)specifier {
+  if (!((NSNumber *)[specifier propertyForKey:@"usesServicePreferenceRouting"])
+           .boolValue) {
+    return [super readPreferenceValue:specifier];
+  }
+
+  if (_isCustom) {
+    return [NSPSharedSpecifiers readCustomPreferenceValue:specifier];
+  }
+  return [NSPSharedSpecifiers readBuiltInServicePreferenceValue:specifier];
 }
 
 - (void)sendTestNotification:(PSSpecifier *)specifier {
